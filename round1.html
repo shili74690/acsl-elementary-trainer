@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>ACSL Round 1 Trainer</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: left-aligned header with a bit-strip motif, underlined tab bar, then cards on a two-column grid that stacks on phones.
+   Each base owns a colour (2 teal, 8 amber, 10 slate, 16 violet) so subscripts and results are readable at a glance. */
+:root{
+  --bg:#eef1f7; --surface:#ffffff; --surface2:#f4f6fb; --ink:#111b34; --muted:#56627f; --line:#d5dbe8;
+  --accent:#2150d6; --accent-ink:#ffffff;
+  --good:#17803f; --good-bg:#e3f3ea; --bad:#c23a2e; --bad-bg:#fbe9e7;
+  --b2:#0c7f72; --b8:#a35a00; --b10:#4d5b7c; --b16:#7338c9;
+  --cr:#d23b3b; --cg:#1d8f49; --cb:#2f62e0;
+  --f-display:'Space Grotesk','Inter',system-ui,sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0d1325; --surface:#151d35; --surface2:#1b2543; --ink:#e8ecf8; --muted:#9aa6c6; --line:#2a3558;
+  --accent:#7d9cff; --accent-ink:#0d1325;
+  --good:#5fd993; --good-bg:#12301f; --bad:#ff8d82; --bad-bg:#3a1b19;
+  --b2:#4fd1c0; --b8:#f0a64a; --b10:#9fb0d6; --b16:#b894ff;
+  --cr:#ff7d7d; --cg:#5fd993; --cb:#7d9cff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1325; --surface:#151d35; --surface2:#1b2543; --ink:#e8ecf8; --muted:#9aa6c6; --line:#2a3558;
+  --accent:#7d9cff; --accent-ink:#0d1325;
+  --good:#5fd993; --good-bg:#12301f; --bad:#ff8d82; --bad-bg:#3a1b19;
+  --b2:#4fd1c0; --b8:#f0a64a; --b10:#9fb0d6; --b16:#b894ff;
+  --cr:#ff7d7d; --cg:#5fd993; --cb:#7d9cff; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);
+  padding-block:22px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1000px;margin:0 auto}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;line-height:1.15}
+p{margin:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.n{font-family:var(--f-mono);font-weight:500;white-space:nowrap}
+sub{font-size:.68em;line-height:0;font-family:var(--f-mono);font-weight:700;margin-left:1px}
+sub.b2{color:var(--b2)} sub.b8{color:var(--b8)} sub.b10{color:var(--b10)} sub.b16{color:var(--b16)}
+sup{font-size:.7em;line-height:0}
+.sw{display:inline-block;width:.9em;height:.9em;border-radius:3px;margin:0 .3em 0 .1em;vertical-align:-.1em;border:1px solid var(--line)}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:20px 40px;align-items:flex-end;justify-content:space-between;padding-bottom:20px}
+.top>div{min-width:0}
+.eyebrow{font:600 .72rem var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+h1{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:700;letter-spacing:-.02em}
+.lede{color:var(--muted);max-width:52ch;margin-top:8px}
+.motif{display:flex;flex-direction:column;gap:8px}
+.bits{display:flex;gap:4px}
+.bits span{width:20px;height:20px;border-radius:4px;background:var(--line)}
+.bits span.on{background:var(--accent)}
+.bits span.gap{margin-left:10px}
+.motif .eq{font-size:.82rem;color:var(--muted)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;margin-bottom:20px}
+.tab{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;padding:10px 14px;font:600 .95rem var(--f-body);color:var(--muted);cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* generic parts */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.card h2{font-size:1.15rem;margin-bottom:4px}
+.card .sub{color:var(--muted);font-size:.9rem;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:16px;align-items:start}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:16px}
+.chips,.seg{display:flex;flex-wrap:wrap;gap:6px}
+.chip,.segb{font:500 .86rem var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer}
+.chip:hover,.segb:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"],.segb[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.lbl{font:600 .72rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.btn{font:600 .92rem var(--f-body);border-radius:8px;padding:9px 16px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--accent)}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+input[type=text],input[type=number],select{font:500 1rem var(--f-mono);background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 12px;max-width:100%}
+input.ans{width:100%;max-width:24rem;text-transform:uppercase}
+input.ans::placeholder{text-transform:none;font-family:var(--f-body);font-size:.9rem;color:var(--muted)}
+select{font-family:var(--f-body)}
+
+/* question */
+.qmeta{font:600 .72rem var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.prompt{font-size:1.2rem;line-height:1.6;margin-bottom:14px}
+.choices{display:grid;gap:8px;max-width:30rem}
+.choice{position:relative;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--surface2);border-radius:8px;padding:8px 12px;cursor:pointer}
+.choice input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.choice .lab{display:grid;place-items:center;width:1.7rem;height:1.7rem;border-radius:6px;border:1px solid var(--line);font:600 .85rem var(--f-mono);background:var(--surface)}
+.choice input:checked + .lab{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.choice input:focus-visible + .lab{outline:2px solid var(--accent);outline-offset:2px}
+.choice .ct{font-size:1.05rem}
+.fb{margin-top:14px;padding:10px 14px;border-radius:8px;font-size:.95rem}
+.fb.ok{background:var(--good-bg);color:var(--good)}
+.fb.bad{background:var(--bad-bg);color:var(--bad)}
+.fb.note{background:var(--surface2);color:var(--muted)}
+.hint{margin-top:12px;color:var(--muted);font-size:.92rem;border-left:3px solid var(--b16);padding-left:10px}
+.steps{margin-top:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface2)}
+.steps summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:.92rem}
+.sol{padding:2px 14px 12px;font-size:.93rem;display:flex;flex-direction:column;gap:3px}
+.cells{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.cell{font:.78rem var(--f-mono);background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:2px 6px}
+.cell.hit{border-color:var(--good);color:var(--good)}
+
+/* progress */
+.prow{margin-bottom:12px}
+.pl{display:flex;justify-content:space-between;gap:8px;font-size:.88rem;margin-bottom:4px}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.streak{display:flex;gap:24px;margin:2px 0 16px}
+.streak b{display:block;font:700 1.6rem var(--f-display)}
+.streak span{font-size:.78rem;color:var(--muted)}
+
+/* explore: bits */
+.grow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.grp{display:flex;flex-direction:column;gap:6px;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface2)}
+.grp.h{border-top:3px solid var(--b16)} .grp.o{border-top:3px solid var(--b8)}
+.gbits{display:flex;gap:4px}
+.bit{width:2.2rem;height:2.4rem;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:600 1rem var(--f-mono);cursor:pointer;padding:0}
+.bit.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.gres{font:700 1.35rem var(--f-mono);text-align:center}
+.grp.h .gres{color:var(--b16)} .grp.o .gres{color:var(--b8)}
+.gres small{display:block;font:400 .7rem var(--f-mono);color:var(--muted)}
+.rowlabel{margin:12px 0 6px}
+.summary{margin-top:10px;font-size:1.05rem}
+.expand{font-size:.9rem;color:var(--muted);margin-top:6px;overflow-wrap:anywhere}
+
+/* explore: rgb */
+.swatch{height:84px;border-radius:8px;border:1px solid var(--line);margin-bottom:12px}
+.ch{display:grid;grid-template-columns:4.2rem minmax(0,1fr) 3rem;gap:4px 10px;align-items:center;margin-bottom:6px}
+.ch label{font:600 .85rem var(--f-mono)}
+.ch input[type=range]{width:100%;min-width:0}
+.ch .dv{font:500 .95rem var(--f-mono);text-align:right}
+.ch .eqn{grid-column:2/4;font-size:.82rem;color:var(--muted);font-family:var(--f-mono);overflow-wrap:anywhere}
+.cr label{color:var(--cr)} .cg label{color:var(--cg)} .cb label{color:var(--cb)}
+.cr input{accent-color:var(--cr)} .cg input{accent-color:var(--cg)} .cb input{accent-color:var(--cb)}
+.hexline{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
+.hexline input{width:9rem}
+
+/* explore: place value */
+.pv{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.pvc{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:3.6rem;padding:8px 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);font-family:var(--f-mono)}
+.pvc .pp{font-size:.72rem;color:var(--muted)}
+.pvc .dd{font-size:1.3rem;font-weight:700}
+.pvc .vv{font-size:.78rem}
+.err{color:var(--bad);font-size:.9rem;margin-top:8px}
+
+/* cheat sheet */
+.nib{display:grid;grid-template-columns:repeat(auto-fill,minmax(5.2rem,1fr));gap:6px}
+.nib div{display:flex;justify-content:space-between;gap:6px;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:.85rem var(--f-mono);background:var(--surface2)}
+.nib b{color:var(--b16)}
+.pows{display:flex;flex-direction:column;gap:6px;margin-top:12px;font:.85rem var(--f-mono);overflow-wrap:anywhere}
+.tips{margin:12px 0 0;padding-left:18px;font-size:.92rem;display:flex;flex-direction:column;gap:4px}
+
+/* mock + worksheet */
+.timer{position:sticky;top:env(safe-area-inset-top,0px)}
+.clockbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.clock{font:700 1.7rem var(--f-mono)}
+.clock.low{color:var(--bad)}
+.mq .qmeta b{color:var(--ink)}
+.score{font:700 2.6rem var(--f-display)}
+.rev{padding:12px 0;border-top:1px solid var(--line)}
+.rev .st{font:600 .8rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase}
+.rev .st.ok{color:var(--good)} .rev .st.bad{color:var(--bad)}
+.wsec{margin-top:18px}
+.wsec h3{font-size:1rem;margin-bottom:8px;color:var(--muted)}
+.wq{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.wn{font:600 .95rem var(--f-mono);min-width:2rem;color:var(--muted)}
+.wq .prompt{font-size:1.05rem;margin:0}
+.wch{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:6px}
+.wkey{margin-top:22px;padding-top:6px;border-top:2px solid var(--line)}
+.ki{padding:6px 0;border-top:1px solid var(--line);font-size:.95rem}
+details.plain{margin-top:16px}
+details.plain summary{cursor:pointer;font-weight:600;font-size:.9rem}
+textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
+.foot{margin-top:28px;color:var(--muted);font-size:.85rem}
+
+@media (max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">ACSL · Contest 1 · Number systems</p>
+      <h1>ACSL Round 1 Trainer</h1>
+      <p class="lede">Practice converting, comparing, adding and counting in bases 2, 8, 10 and 16. Every problem comes with a worked solution.</p>
+    </div>
+    <div class="motif" aria-hidden="true">
+      <div class="bits"><span class="on"></span><span></span><span class="on"></span><span class="on"></span><span class="gap"></span><span></span><span class="on"></span><span></span><span class="on"></span></div>
+      <div class="eq n">10110101<sub class="b2">2</sub> = 265<sub class="b8">8</sub> = B5<sub class="b16">16</sub> = 181<sub class="b10">10</sub></div>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab" role="tab" id="t-practice" aria-controls="p-practice">Practice</button>
+    <button class="tab" role="tab" id="t-explore" aria-controls="p-explore">Explore</button>
+    <button class="tab" role="tab" id="t-mock" aria-controls="p-mock">Mock contest</button>
+    <button class="tab" role="tab" id="t-worksheet" aria-controls="p-worksheet">Worksheets</button>
+  </nav>
+
+  <!-- PRACTICE -->
+  <section id="p-practice" role="tabpanel" aria-labelledby="t-practice" hidden>
+    <div class="controls">
+      <span class="lbl">Type</span>
+      <div class="chips" id="typeChips" role="group" aria-label="Question type"></div>
+      <span class="lbl">Level</span>
+      <div class="seg" id="levelSeg" role="group" aria-label="Level">
+        <button class="segb" data-l="1" aria-pressed="true">Warm-up</button>
+        <button class="segb" data-l="2" aria-pressed="false">Contest</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <article class="card">
+        <div class="qmeta" id="qmeta"></div>
+        <div class="prompt" id="qprompt"></div>
+        <div id="qinput"></div>
+        <div class="hint" id="qhint" hidden></div>
+        <div class="btnrow">
+          <button class="btn" id="btnCheck">Check answer</button>
+          <button class="btn" id="btnNext" hidden>Next question</button>
+          <button class="btn ghost" id="btnHint">Hint</button>
+          <button class="btn ghost" id="btnSkip">Skip</button>
+        </div>
+        <div id="qfb" aria-live="polite"></div>
+      </article>
+      <aside class="card">
+        <h2>Your progress</h2>
+        <p class="sub">Saved in this browser only.</p>
+        <div class="streak"><div><b id="stStreak">0</b><span>current streak</span></div><div><b id="stBest">0</b><span>best streak</span></div></div>
+        <div id="progRows"></div>
+        <button class="btn ghost" id="btnReset">Reset progress</button>
+      </aside>
+    </div>
+  </section>
+
+  <!-- EXPLORE -->
+  <section id="p-explore" role="tabpanel" aria-labelledby="t-explore" hidden>
+    <div class="stack">
+      <article class="card">
+        <h2>Bit switches</h2>
+        <p class="sub">Tap a bit to flip it. Grouping by 4 gives a hex digit; grouping by 3 gives an octal digit. Both groupings start from the right.</p>
+        <div class="lbl rowlabel">Groups of 4 → hexadecimal</div>
+        <div class="grow" id="rowHex"></div>
+        <div class="lbl rowlabel">Groups of 3 → octal</div>
+        <div class="grow" id="rowOct"></div>
+        <div class="summary" id="bitSummary"></div>
+        <div class="expand" id="bitExpand"></div>
+        <div class="btnrow">
+          <button class="btn ghost" id="bitRandom">Random number</button>
+          <button class="btn ghost" id="bitClear">Clear</button>
+        </div>
+      </article>
+
+      <div class="grid-auto">
+        <article class="card">
+          <h2>RGB colour mixer</h2>
+          <p class="sub">A colour is #RRGGBB: two hex digits for each of red, green and blue.</p>
+          <div class="swatch" id="swatch"></div>
+          <div class="hexline">
+            <label class="lbl" for="hexIn">Hex code</label>
+            <input type="text" id="hexIn" maxlength="7" autocomplete="off" spellcheck="false" value="#38B0DE">
+            <span class="n" id="hexMsg"></span>
+          </div>
+          <div class="ch cr"><label for="sr">Red</label><input type="range" id="sr" min="0" max="255" value="56"><span class="dv" id="vr"></span><span class="eqn" id="er"></span></div>
+          <div class="ch cg"><label for="sg">Green</label><input type="range" id="sg" min="0" max="255" value="176"><span class="dv" id="vg"></span><span class="eqn" id="eg"></span></div>
+          <div class="ch cb"><label for="sb">Blue</label><input type="range" id="sb" min="0" max="255" value="222"><span class="dv" id="vb"></span><span class="eqn" id="eb"></span></div>
+        </article>
+
+        <article class="card">
+          <h2>Expanded notation</h2>
+          <p class="sub">See how each digit is multiplied by a power of the base.</p>
+          <div class="hexline">
+            <label class="lbl" for="enIn">Number</label>
+            <input type="text" id="enIn" maxlength="12" autocomplete="off" spellcheck="false" value="1357" style="width:9rem;text-transform:uppercase">
+            <label class="lbl" for="enBase">Base</label>
+            <select id="enBase"><option value="2">2</option><option value="8" selected>8</option><option value="10">10</option><option value="16">16</option></select>
+          </div>
+          <div id="enOut"></div>
+        </article>
+      </div>
+
+      <article class="card">
+        <h2>Cheat sheet</h2>
+        <p class="sub">Know these cold and the rest is bookkeeping.</p>
+        <div class="nib" id="nib"></div>
+        <div class="pows">
+          <div>Powers of 2: 1 2 4 8 16 32 64 128 256 512 1024</div>
+          <div>Powers of 8: 1 8 64 512 4096</div>
+          <div>Powers of 16: 1 16 256 4096</div>
+        </div>
+        <ul class="tips">
+          <li>Binary is the bridge: 3 bits make an octal digit, 4 bits make a hex digit.</li>
+          <li>To compare numbers in different bases, convert them all to base 10 (or all to hex) first.</li>
+          <li>Carry and borrow at the base: 8 in octal, 16 in hex. Turn letters into values before you add.</li>
+          <li>To count 1s, expand every digit into its 3 or 4 bits. Ignore leading zeros when counting 0s.</li>
+          <li>In #RRGGBB, a pair such as A8 is 10 × 16 + 8 = 168.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- MOCK -->
+  <section id="p-mock" role="tabpanel" aria-labelledby="t-mock" hidden>
+    <div id="mockRoot"></div>
+  </section>
+
+  <!-- WORKSHEET -->
+  <section id="p-worksheet" role="tabpanel" aria-labelledby="t-worksheet" hidden>
+    <article class="card">
+      <h2>Worksheet builder</h2>
+      <p class="sub">The same set number always gives the same questions, so you can hand students a number instead of a file.</p>
+      <div class="controls">
+        <label class="lbl" for="wsSeed">Set number</label>
+        <input type="number" id="wsSeed" min="1" max="999999" value="1017" style="width:7.5rem">
+        <button class="btn ghost" id="wsNew">New set</button>
+        <label class="lbl" for="wsPer">Per type</label>
+        <select id="wsPer"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select>
+        <span class="lbl">Level</span>
+        <div class="seg" id="wsLevel" role="group" aria-label="Worksheet level">
+          <button class="segb" data-l="1" aria-pressed="false">Warm-up</button>
+          <button class="segb" data-l="2" aria-pressed="true">Contest</button>
+        </div>
+        <span class="lbl">Key</span>
+        <div class="seg" id="wsKey" role="group" aria-label="Answer key">
+          <button class="segb" data-k="0" aria-pressed="true">Hidden</button>
+          <button class="segb" data-k="1" aria-pressed="false">Answers</button>
+          <button class="segb" data-k="2" aria-pressed="false">With steps</button>
+        </div>
+      </div>
+      <div class="btnrow" style="margin-top:0;margin-bottom:6px">
+        <button class="btn" id="wsCopyQ">Copy questions</button>
+        <button class="btn ghost" id="wsCopyK">Copy answer key</button>
+      </div>
+      <div id="wsOut"></div>
+      <details class="plain"><summary>Plain text (select and copy if the buttons do not work)</summary>
+        <textarea id="sheetText" readonly aria-label="Plain text worksheet"></textarea></details>
+    </article>
+  </section>
+
+  <p class="foot">Problems are generated in the style of past ACSL Contest 1 questions (2016–2024): conversion, comparison, base arithmetic, bit counting and hex colours.</p>
+</div>
+
+<script>
+/* ============ problem generators ============ */
+const DIG='0123456789ABCDEF';
+const toB=(n,b)=>n.toString(b).toUpperCase();
+const SUBD='₀₁₂₃₄₅₆₇₈₉';
+const toSub=s=>String(s).replace(/\d/g,d=>SUBD[d]);
+const N=(s,b)=>`<span class="n">${s}<sub class="b${b}">${b}</sub></span>`;
+const plain=h=>h.replace(/<sub[^>]*>(\d+)<\/sub>/g,(m,d)=>toSub(d)).replace(/<sup>(\d+)<\/sup>/g,(m,d)=>'^'+d).replace(/<[^>]+>/g,'').replace(/&amp;/g,'&');
+const sup=p=>`<sup>${p}</sup>`;
+const dg=v=>v>9?`${DIG[v]}(${v})`:`${v}`;
+const digitsOf=s=>s.split('').map(c=>DIG.indexOf(c));
+const groupsR=(str,k)=>{str=str.padStart(Math.ceil(str.length/k)*k,'0');const o=[];for(let i=0;i<str.length;i+=k)o.push(str.slice(i,i+k));return o};
+const L=(...a)=>a.flat().map(x=>`<div>${x}</div>`).join('');
+const MINUS='−';
+
+function rng(seed){let a=seed>>>0;
+  const f=()=>{a=(a+0x6D2B79F5)|0;let t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296};
+  f.int=(lo,hi)=>lo+Math.floor(f()*(hi-lo+1));
+  f.pick=a=>a[Math.floor(f()*a.length)];
+  f.shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(f()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+  return f}
+
+const expandLine=(s,b)=>{const d=digitsOf(s),n=d.length;
+  return d.map((x,i)=>`${dg(x)} × ${b}${sup(n-1-i)}`).join(' + ')+' = '+d.map((x,i)=>x*b**(n-1-i)).join(' + ')+' = <b>'+parseInt(s,b)+'</b>'};
+const expandSol=(s,b)=>L(`Expanded notation: ${N(s,b)} = ${expandLine(s,b)}`);
+function divSol(v,b){let x=v;const rows=[];while(x>0){const q=Math.floor(x/b),m=x%b;rows.push(`${x} ÷ ${b} = ${q} remainder ${m>9?DIG[m]+' ('+m+')':m}`);x=q}
+  return L(`Divide repeatedly by ${b} and keep the remainders:`,rows,`Read the remainders from the bottom up: <b>${toB(v,b)}</b>`)}
+function bridgeSol(s,fb,tb){
+  const w=x=>x===2?1:x===8?3:4;let bits,l1;
+  if(fb===2){bits=s;l1=`${N(s,2)} is already binary.`}
+  else{const k=w(fb);const parts=digitsOf(s).map(d=>d.toString(2).padStart(k,'0'));
+    bits=parts.join('').replace(/^0+(?=.)/,'');
+    l1=`Turn each digit into ${k} bits: ${s.split('').map((c,i)=>c+' → '+parts[i]).join(', ')}`}
+  if(tb===2)return L(l1,`Remove leading zeros: <b>${bits}</b>`);
+  const k2=w(tb),g=groupsR(bits,k2),ds=g.map(x=>toB(parseInt(x,2),tb));
+  return L(l1,`Binary: ${N(bits,2)}`,`Group from the right in ${k2}s: ${g.join(' ')}`,`Each group is one base-${tb} digit: ${ds.join(' ')} → <b>${ds.join('')}</b>`)}
+
+function genConvert(r,l){
+  const pairs=[[8,10],[16,10],[2,10],[10,8],[10,16],[10,2],[8,16],[16,8],[2,16],[2,8],[16,2],[8,2]];
+  const [fb,tb]=r.pick(pairs);
+  const max=(fb===2||tb===2)?(l===1?255:1023):(l===1?999:4095);
+  const v=r.int(17,max),s=toB(v,fb),ans=toB(v,tb);
+  const sol=tb===10?expandSol(s,fb):fb===10?divSol(v,tb):bridgeSol(s,fb,tb);
+  return{kind:'input',prompt:`Convert ${N(s,fb)} to base ${tb}.`,answer:ans,answerText:N(ans,tb),placeholder:`Value in base ${tb}`,solution:sol}}
+
+function genCompare(r,l){
+  const bases=r.shuffle([2,8,10,16]).slice(0,3);
+  const base=r.int(l===1?60:200,l===1?250:1500);let vals;
+  do{vals=[0,1,2].map(()=>base+r.int(-12,12))}while(new Set(vals).size<3);
+  const want=r.pick(['largest','smallest']),labels=['A','B','C'];
+  const choices=vals.map((v,i)=>({label:labels[i],text:N(toB(v,bases[i]),bases[i])}));
+  const t=want==='largest'?Math.max(...vals):Math.min(...vals),idx=vals.indexOf(t);
+  const lines=vals.map((v,i)=>bases[i]===10?`${labels[i]}. ${choices[i].text} is already base 10 = <b>${v}</b>`:`${labels[i]}. ${choices[i].text} = ${expandLine(toB(v,bases[i]),bases[i])}`);
+  return{kind:'choice',prompt:`Which of these is the ${want} number?`,choices,answer:labels[idx],answerText:`${labels[idx]}. ${choices[idx].text}`,
+    solution:L('Convert each number to base 10:',lines,`The ${want} value is ${t}, so the answer is <b>${labels[idx]}</b>.`)}}
+
+function addTrace(x,y,b){const A=toB(x,b),B=toB(y,b),n=Math.max(A.length,B.length);
+  const da=digitsOf(A.padStart(n,'0')).reverse(),db=digitsOf(B.padStart(n,'0')).reverse();let c=0;const o=[];
+  for(let i=0;i<n;i++){const s=da[i]+db[i]+c;
+    o.push(`Column ${i+1}: ${dg(da[i])} + ${dg(db[i])}${c?' + 1':''} = ${s} → write ${DIG[s%b]}${s>=b?', carry 1':''}`);c=s>=b?1:0}
+  if(c)o.push('Leftover carry: write 1');return o}
+function subTrace(x,y,b){const A=toB(x,b),B=toB(y,b),n=Math.max(A.length,B.length);
+  const da=digitsOf(A.padStart(n,'0')).reverse(),db=digitsOf(B.padStart(n,'0')).reverse();let bo=0;const o=[];
+  for(let i=0;i<n;i++){let d=da[i]-bo-db[i];const t=`${dg(da[i])}${bo?' '+MINUS+' 1 (borrowed)':''} ${MINUS} ${dg(db[i])}`;
+    if(d<0){d+=b;bo=1;o.push(`Column ${i+1}: ${t} is negative, so add ${b}: result ${d} → write ${DIG[d]}, borrow 1`)}
+    else{bo=0;o.push(`Column ${i+1}: ${t} = ${d} → write ${DIG[d]}`)}}
+  return o}
+
+function genArith(r,l){
+  const b=r.pick([8,16]),nd=l===1?r.int(3,4):r.int(4,5);
+  const rv=()=>r.int(b**(nd-1),b**nd-1);let terms,ops,res,ok;
+  do{ops=l===1?[r.pick(['+','-'])]:[r.pick(['+','-']),r.pick(['+','-'])];
+    terms=[rv(),...ops.map(rv)];res=terms[0];ok=true;
+    ops.forEach((o,i)=>{res=o==='+'?res+terms[i+1]:res-terms[i+1];if(res<=0)ok=false})}while(!ok);
+  const T=x=>N(toB(x,b),b);
+  const expr=terms.map((t,i)=>(i?` ${ops[i-1]==='+'?'+':MINUS} `:'')+T(t)).join('');
+  const sol=[];let acc=terms[0];
+  ops.forEach((o,i)=>{const t=terms[i+1],nx=o==='+'?acc+t:acc-t;
+    sol.push(`<b>Step ${i+1}:</b> ${T(acc)} ${o==='+'?'+':MINUS} ${T(t)}`);
+    sol.push(...(o==='+'?addTrace(acc,t,b):subTrace(acc,t,b)));sol.push(`= ${T(nx)}`);acc=nx});
+  sol.push(`Check in base 10: ${terms.map((t,i)=>(i?` ${ops[i-1]==='+'?'+':MINUS} `:'')+t).join('')} = ${res}`);
+  const ans=toB(res,b);
+  return{kind:'input',prompt:`Evaluate ${expr}. Express the answer in ${b===8?'octal':'hexadecimal'}.`,answer:ans,answerText:N(ans,b),placeholder:`Answer in base ${b}`,solution:L(sol)}}
+
+const ones=n=>n.toString(2).split('').filter(c=>c==='1').length;
+const zeros=n=>n.toString(2).length-ones(n);
+function randNum(r,b,n){let s=DIG[r.int(1,b-1)];for(let i=1;i<n;i++)s+=DIG[r.int(0,b-1)];return s}
+function bitParts(s,b){const k=b===8?3:4;return digitsOf(s).map(d=>d.toString(2).padStart(k,'0'))}
+
+function genBits(r,l){
+  const v=r.pick(l===1?['count','count','pick']:['count','pick','range']);
+  if(v==='count'){
+    const b=r.pick([8,16]),s=randNum(r,b,l===1?3:4),val=parseInt(s,b),want=r.pick(['1','1','0']);
+    const parts=bitParts(s,b),bin=val.toString(2),cnt=want==='1'?ones(val):zeros(val);
+    return{kind:'input',prompt:`How many ${want}'s are in the binary representation of ${N(s,b)}?${want==='0'?' Ignore leading zeros.':''}`,answer:String(cnt),answerText:String(cnt),placeholder:'A whole number',
+      solution:L(`Each ${b===8?'octal':'hex'} digit becomes ${b===8?3:4} bits: ${s.split('').map((c,i)=>c+' → '+parts[i]).join(', ')}`,`Binary${want==='0'?' (leading zeros removed)':''}: ${N(bin,2)}`,`Count the ${want}'s: <b>${cnt}</b>`)}}
+  if(v==='pick'){
+    const want=r.pick(['most','least']);let nums,counts,uniq=false;
+    do{nums=[0,1,2,3].map(()=>{const b=r.pick([8,16]);return{b,s:randNum(r,b,l===1?3:4)}});
+      counts=nums.map(x=>ones(parseInt(x.s,x.b)));
+      const t=want==='most'?Math.max(...counts):Math.min(...counts);uniq=counts.filter(c=>c===t).length===1}while(!uniq);
+    const t=want==='most'?Math.max(...counts):Math.min(...counts),idx=counts.indexOf(t),labels=['A','B','C','D'];
+    const choices=nums.map((x,i)=>({label:labels[i],text:N(x.s,x.b)}));
+    return{kind:'choice',prompt:`Which number has the ${want} 1's in its binary representation?`,choices,answer:labels[idx],answerText:`${labels[idx]}. ${choices[idx].text}`,
+      solution:L(nums.map((x,i)=>`${labels[i]}. ${N(x.s,x.b)} → ${bitParts(x.s,x.b).join(' ')} → ${counts[i]} ones`),`The ${want} is <b>${labels[idx]}</b> with ${t}.`)}}
+  let lo,hi,kind,cnt;
+  do{if(l===1){[lo,hi]=r.pick([[8,15],[16,31],[16,31],[32,63],[1,15]])}else{lo=r.int(8,40);hi=lo+r.int(12,24)}
+    kind=(lo===1)?'equal':r.pick(['more','more','equal']);
+    cnt=0;for(let n=lo;n<=hi;n++){if(kind==='more'?ones(n)>zeros(n):ones(n)===zeros(n))cnt++}}while(cnt===0);
+  const cells=[];for(let n=lo;n<=hi;n++){const o=ones(n),z=zeros(n),hit=kind==='more'?o>z:o===z;cells.push(`<span class="cell${hit?' hit':''}">${n} = ${n.toString(2)} (${o}/${z})</span>`)}
+  return{kind:'input',prompt:`Counting in binary from ${lo} to ${hi} (base 10, inclusive), how many numbers have ${kind==='more'?"more 1's than 0's":"the same number of 1's as 0's"}? Ignore leading zeros.`,
+    answer:String(cnt),answerText:String(cnt),placeholder:'A whole number',
+    solution:L(`Write each number in binary and count (ones/zeros). Matches are outlined:`,`<div class="cells">${cells.join('')}</div>`,`Matches: <b>${cnt}</b>`)}}
+
+function genRGB(r,l){
+  const nm=['red','green','blue'],hx=v=>toB(v,16).padStart(2,'0');
+  const mk=()=>[0,1,2].map(()=>r.int(l===1?32:8,255)),col=c=>'#'+c.map(hx).join('');
+  const chip=c=>`<i class="sw" style="background:${col(c)}"></i><span class="n">${col(c)}</span>`;
+  const comp=(c,k)=>`${N(hx(c[k]),16)} = ${dg(c[k]>>4)} × 16 + ${dg(c[k]&15)} = <b>${c[k]}</b>`;
+  const split=c=>`Split into pairs: ${hx(c[0])} | ${hx(c[1])} | ${hx(c[2])} (red | green | blue)`;
+  const v=r.pick(['one','sum','diff','dom','triplet']);let c=mk();
+  if(v==='one'){const k=r.int(0,2);
+    return{kind:'input',prompt:`What is the decimal value of the ${nm[k]} component of ${chip(c)}?`,answer:String(c[k]),answerText:String(c[k]),placeholder:'Decimal value',solution:L(split(c),comp(c,k))}}
+  if(v==='sum'){const [a,b]=r.shuffle([0,1,2]).slice(0,2).sort(),s=c[a]+c[b];
+    return{kind:'input',prompt:`What is the sum, in base 10, of the ${nm[a]} and ${nm[b]} components of ${chip(c)}?`,answer:String(s),answerText:String(s),placeholder:'Decimal value',
+      solution:L(split(c),comp(c,a),comp(c,b),`${c[a]} + ${c[b]} = <b>${s}</b>`)}}
+  if(v==='diff'){const k=r.int(0,2);let c2;do{c2=mk()}while(c2[k]===c[k]);
+    const d=Math.abs(c[k]-c2[k]),h=toB(d,16);
+    return{kind:'input',prompt:`What is the positive difference between the ${nm[k]} components of ${chip(c)} and ${chip(c2)}? Give the answer in hexadecimal.`,answer:h,answerText:N(h,16),placeholder:'Hexadecimal value',
+      solution:L(`First colour: ${split(c)}`,`Second colour: ${split(c2)}`,comp(c,k),comp(c2,k),`${Math.max(c[k],c2[k])} ${MINUS} ${Math.min(c[k],c2[k])} = ${d}, and ${d} in hex is <b>${h}</b>`)}}
+  if(v==='dom'){while(new Set(c).size<3||c.filter(x=>x===Math.max(...c)).length>1)c=mk();
+    const m=Math.max(...c),k=c.indexOf(m);
+    return{kind:'input',prompt:`What is the base 10 value of the largest (most dominant) component of ${chip(c)}?`,answer:String(m),answerText:String(m),placeholder:'Decimal value',
+      solution:L(split(c),comp(c,0),comp(c,1),comp(c,2),`The largest is the ${nm[k]} component: <b>${m}</b>`)}}
+  return{kind:'input',prompt:`Write the RGB decimal triplet for ${chip(c)}, with commas between the three numbers.`,answer:c.join(','),answerText:c.join(', '),placeholder:'R,G,B',
+    solution:L(split(c),comp(c,0),comp(c,1),comp(c,2),`Triplet: <b>(${c.join(', ')})</b>`)}}
+
+const TYPES=[{id:'convert',name:'Base conversion'},{id:'compare',name:'Compare numbers'},{id:'arith',name:'Base arithmetic'},{id:'bits',name:'Counting bits'},{id:'rgb',name:'Hex colours'}];
+const HINTS={convert:'Binary is the bridge between octal and hex: 3 bits per octal digit, 4 bits per hex digit. For base 10, use expanded notation.',
+  compare:'Convert every number to the same base (base 10 works), then compare.',
+  arith:'Carry and borrow at the base (8 or 16), not at 10. Turn letters into their values first.',
+  bits:'Turn each octal digit into 3 bits and each hex digit into 4 bits, then count. Ignore leading zeros.',
+  rgb:'#RRGGBB uses two hex digits each for red, green and blue. A pair like A8 equals 10 × 16 + 8.'};
+const GENS={convert:genConvert,compare:genCompare,arith:genArith,bits:genBits,rgb:genRGB};
+function makeProblem(type,l,r){const g=GENS[type](r,l);g.type=type;g.level=l;g.hint=HINTS[type];
+  g.plain=plain(g.prompt);g.plainChoices=g.kind==='choice'?g.choices.map(c=>c.label+'. '+plain(c.text)):[];g.answerPlain=plain(g.answerText);return g}
+function norm(s){s=String(s).toUpperCase().replace(/[\s()#]/g,'');
+  if(/[,;]/.test(s))return s.split(/[,;]/).map(x=>x.replace(/^0+(?=.)/,'')).join(',');
+  return s.replace(/^0+(?=.)/,'')}
+const isRight=(p,s)=>norm(s)===norm(p.answer);
+//==UI==
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const newRng=()=>rng(Math.floor(Math.random()*2147483647));
+const LV=['','Warm-up','Contest'];
+
+function qHTML(p,id){
+  if(p.kind==='choice')return `<div class="choices" role="radiogroup" aria-label="Choose one">`+p.choices.map(c=>`<label class="choice"><input type="radio" name="${id}" value="${c.label}"><span class="lab">${c.label}</span><span class="ct">${c.text}</span></label>`).join('')+`</div>`;
+  return `<label class="sr" for="${id}">Your answer</label><input class="ans" type="text" id="${id}" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="${esc(p.placeholder||'Your answer')}">`}
+function readAns(p,id,root){if(p.kind==='choice'){const c=root.querySelector(`input[name="${id}"]:checked`);return c?c.value:''}const e=root.querySelector('#'+id);return e?e.value:''}
+function lockInputs(root){$$('input',root).forEach(i=>i.disabled=true)}
+
+/* ---- tabs ---- */
+const TABS=['practice','explore','mock','worksheet'];
+function showTab(){const h=location.hash.slice(1),t=TABS.includes(h)?h:'practice';
+  TABS.forEach(x=>{$('#p-'+x).hidden=x!==t;$('#t-'+x).setAttribute('aria-selected',String(x===t))})}
+TABS.forEach(x=>$('#t-'+x).addEventListener('click',()=>{location.hash=x}));
+addEventListener('hashchange',showTab);
+
+/* ---- practice ---- */
+let ST={streak:0,best:0};
+try{const s=JSON.parse(localStorage.getItem('acsl-r1-stats')||'null');if(s)ST=Object.assign(ST,s)}catch(e){}
+const saveST=()=>{try{localStorage.setItem('acsl-r1-stats',JSON.stringify(ST))}catch(e){}};
+const T={type:'mixed',level:1,cur:null,done:false};
+function renderChips(){const all=[{id:'mixed',name:'Mixed'},...TYPES];
+  $('#typeChips').innerHTML=all.map(t=>`<button class="chip" data-t="${t.id}" aria-pressed="${T.type===t.id}">${t.name}</button>`).join('')}
+function renderProgress(){
+  $('#stStreak').textContent=ST.streak;$('#stBest').textContent=ST.best;
+  $('#progRows').innerHTML=TYPES.map(t=>{const s=ST[t.id]||{a:0,c:0},pct=s.a?Math.round(100*s.c/s.a):0;
+    return `<div class="prow"><div class="pl"><span>${t.name}</span><span class="n">${s.c}/${s.a}</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>`}).join('')}
+function nextQ(){const type=T.type==='mixed'?TYPES[Math.floor(Math.random()*5)].id:T.type;
+  T.cur=makeProblem(type,T.level,newRng());T.done=false;const p=T.cur;
+  $('#qmeta').textContent=`${TYPES.find(t=>t.id===type).name} · ${LV[p.level]}`;
+  $('#qprompt').innerHTML=p.prompt;$('#qinput').innerHTML=qHTML(p,'ans-t');
+  $('#qfb').innerHTML='';$('#qhint').hidden=true;$('#qhint').textContent=p.hint;
+  $('#btnCheck').hidden=false;$('#btnNext').hidden=true;$('#btnHint').hidden=false;$('#btnSkip').hidden=false;
+  const i=$('#ans-t');if(i)i.focus()}
+function checkT(){
+  if(T.done){nextQ();return}
+  const p=T.cur,a=readAns(p,'ans-t',$('#qinput'));
+  if(!a.trim()){$('#qfb').innerHTML='<div class="fb note">Enter an answer first.</div>';return}
+  const ok=isRight(p,a);T.done=true;
+  const s=ST[p.type]||(ST[p.type]={a:0,c:0});s.a++;if(ok)s.c++;
+  ST.streak=ok?ST.streak+1:0;ST.best=Math.max(ST.best,ST.streak);saveST();
+  $('#qfb').innerHTML=(ok?`<div class="fb ok"><strong>Correct.</strong></div>`:`<div class="fb bad"><strong>Not quite.</strong> You answered <span class="n">${esc(a)}</span>. The answer is <span class="n">${p.answerText}</span>.</div>`)
+    +`<details class="steps"${ok?'':' open'}><summary>Worked solution</summary><div class="sol">${p.solution}</div></details>`;
+  lockInputs($('#qinput'));$('#btnCheck').hidden=true;$('#btnNext').hidden=false;$('#btnHint').hidden=true;$('#btnSkip').hidden=true;
+  renderProgress();$('#btnNext').focus()}
+$('#btnCheck').addEventListener('click',checkT);
+$('#btnNext').addEventListener('click',nextQ);
+$('#btnSkip').addEventListener('click',nextQ);
+$('#btnHint').addEventListener('click',()=>{const h=$('#qhint');h.hidden=!h.hidden});
+$('#btnReset').addEventListener('click',()=>{ST={streak:0,best:0};saveST();renderProgress()});
+$('#p-practice').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.matches('input.ans')||e.target.matches('input[type=radio]'))){e.preventDefault();checkT()}});
+$('#typeChips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;T.type=b.dataset.t;renderChips();nextQ()});
+$('#levelSeg').addEventListener('click',e=>{const b=e.target.closest('.segb');if(!b)return;T.level=+b.dataset.l;$$('#levelSeg .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));nextQ()});
+
+/* ---- explore: bit switches ---- */
+let bv=0xA5E;
+function bitBtn(i,on){return `<button class="bit${on?' on':''}" data-i="${i}" aria-pressed="${on}" aria-label="Bit ${11-i}, value ${on?1:0}">${on?1:0}</button>`}
+function renderBits(){
+  const bits=bv.toString(2).padStart(12,'0').split('');
+  let h='';for(let g=0;g<3;g++){const idx=[0,1,2,3].map(k=>g*4+k),v=parseInt(idx.map(i=>bits[i]).join(''),2);
+    h+=`<div class="grp h"><div class="gbits">${idx.map(i=>bitBtn(i,bits[i]==='1')).join('')}</div><div class="gres">${DIG[v]}<small>${idx.map(i=>bits[i]).join('')}₂ = ${v}</small></div></div>`}
+  $('#rowHex').innerHTML=h;h='';
+  for(let g=0;g<4;g++){const idx=[0,1,2].map(k=>g*3+k),v=parseInt(idx.map(i=>bits[i]).join(''),2);
+    h+=`<div class="grp o"><div class="gbits">${idx.map(i=>bitBtn(i,bits[i]==='1')).join('')}</div><div class="gres">${v}<small>${idx.map(i=>bits[i]).join('')}₂ = ${v}</small></div></div>`}
+  $('#rowOct').innerHTML=h;
+  $('#bitSummary').innerHTML=`${N(bv.toString(2),2)} = ${N(bv.toString(8),8)} = ${N(toB(bv,16),16)} = ${N(String(bv),10)}`;
+  const on=[];for(let k=11;k>=0;k--)if(bv>>k&1)on.push(2**k);
+  $('#bitExpand').textContent=bv?`Base 10 value: ${on.join(' + ')} = ${bv}`:'Base 10 value: 0'}
+$('#p-explore').addEventListener('click',e=>{const b=e.target.closest('.bit');if(!b)return;
+  const rowId=b.closest('.grow').id,i=b.dataset.i;bv^=1<<(11-+i);renderBits();
+  const again=$(`#${rowId} .bit[data-i="${i}"]`);if(again)again.focus()});
+$('#bitRandom').addEventListener('click',()=>{bv=Math.floor(Math.random()*4096);renderBits()});
+$('#bitClear').addEventListener('click',()=>{bv=0;renderBits()});
+
+/* ---- explore: rgb ---- */
+let rgb=[0x38,0xB0,0xDE];const hx2=v=>toB(v,16).padStart(2,'0');
+function renderRGB(skipHex){
+  const hex='#'+rgb.map(hx2).join('');$('#swatch').style.background=hex;
+  ['r','g','b'].forEach((k,i)=>{$('#s'+k).value=rgb[i];$('#v'+k).textContent=rgb[i];
+    $('#e'+k).textContent=`${hx2(rgb[i])} = ${dg(rgb[i]>>4)} × 16 + ${dg(rgb[i]&15)} = ${rgb[i]}`});
+  if(!skipHex){$('#hexIn').value=hex;$('#hexMsg').textContent=''}}
+['r','g','b'].forEach((k,i)=>$('#s'+k).addEventListener('input',e=>{rgb[i]=+e.target.value;renderRGB(false)}));
+$('#hexIn').addEventListener('input',e=>{let s=e.target.value.trim().replace(/^#/,'').toUpperCase();
+  if(/^[0-9A-F]{6}$/.test(s)){rgb=[0,2,4].map(i=>parseInt(s.slice(i,i+2),16));renderRGB(true);$('#hexMsg').textContent=''}
+  else $('#hexMsg').textContent='Use 6 hex digits, 0 to 9 and A to F.'});
+
+/* ---- explore: expanded notation ---- */
+function renderEN(){
+  const b=+$('#enBase').value,s=$('#enIn').value.trim().toUpperCase(),out=$('#enOut');
+  if(!s){out.innerHTML='<div class="err">Type a number.</div>';return}
+  const bad=s.split('').find(c=>DIG.indexOf(c)<0||DIG.indexOf(c)>=b);
+  if(bad){out.innerHTML=`<div class="err">${esc(bad)} is not a digit in base ${b}. Allowed digits: ${DIG.slice(0,b)}.</div>`;return}
+  const d=digitsOf(s),n=d.length;
+  out.innerHTML=`<div class="pv">${d.map((x,i)=>{const p=n-1-i;return `<div class="pvc"><span class="pp">${b}${sup(p)} = ${b**p}</span><span class="dd">${s[i]}</span><span class="vv">${x} × ${b**p} = ${x*b**p}</span></div>`}).join('')}</div>
+  <div class="summary">${N(s,b)} = ${d.map((x,i)=>x*b**(n-1-i)).join(' + ')} = <b class="n">${parseInt(s,b)}</b></div>`}
+$('#enIn').addEventListener('input',renderEN);$('#enBase').addEventListener('change',renderEN);
+$('#nib').innerHTML=Array.from({length:16},(_,i)=>`<div><b>${DIG[i]}</b><span>${i.toString(2).padStart(4,'0')}</span></div>`).join('');
+
+/* ---- mock contest ---- */
+const M={phase:'start',level:2,minutes:30,probs:[],end:0,timer:null,start:0,res:null};
+function fmt(ms){const s=Math.max(0,Math.ceil(ms/1000));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function renderMock(){const root=$('#mockRoot');
+  if(M.phase==='start'){
+    root.innerHTML=`<article class="card"><h2>Mock contest</h2>
+      <p class="sub">Five questions, one from each type, in the order of a real Contest 1 paper. No hints and no worked solutions until you submit.</p>
+      <div class="controls"><label class="lbl" for="mkMin">Time</label>
+      <select id="mkMin"><option value="10">10 minutes</option><option value="20">20 minutes</option><option value="30" selected>30 minutes</option></select>
+      <span class="lbl">Level</span><div class="seg" id="mkLevel" role="group" aria-label="Mock level">
+      <button class="segb" data-l="1" aria-pressed="false">Warm-up</button><button class="segb" data-l="2" aria-pressed="true">Contest</button></div></div>
+      <button class="btn" id="mkStart">Start the clock</button></article>`;
+    $('#mkMin').value=String(M.minutes);
+    $$('#mkLevel .segb').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.l===M.level)));
+  }else if(M.phase==='run'){
+    root.innerHTML=`<div class="stack"><article class="card"><div class="clockbar"><div><div class="lbl">Time left</div><div class="clock" id="clock">${fmt(M.end-Date.now())}</div></div>
+      <button class="btn" id="mkSubmit">Submit answers</button></div><p class="sub" style="margin:0">Unanswered questions score zero. The contest submits itself when time runs out.</p></article>`
+      +M.probs.map((p,i)=>`<article class="card mq"><div class="qmeta"><b>Question ${i+1}</b> · ${TYPES[i].name}</div><div class="prompt">${p.prompt}</div><div id="mq${i}">${qHTML(p,'mqa'+i)}</div></article>`).join('')+`</div>`;
+  }else{
+    const R=M.res;
+    root.innerHTML=`<div class="stack"><article class="card"><div class="lbl">Your score</div><div class="score">${R.score} / 5</div>
+      <p class="sub" style="margin-bottom:0">${R.timedOut?'Time ran out.':'Submitted with '+fmt(R.left)+' left.'} Open any question below for the worked solution.</p>
+      <div class="btnrow"><button class="btn" id="mkAgain">New mock contest</button></div></article>
+      <article class="card"><h2>Review</h2>`+M.probs.map((p,i)=>{const a=R.ans[i],ok=R.ok[i];
+        return `<div class="rev"><div class="st ${ok?'ok':'bad'}">Question ${i+1} · ${TYPES[i].name} · ${ok?'correct':(a.trim()?'incorrect':'no answer')}</div>
+        <div class="prompt" style="font-size:1.05rem;margin:6px 0">${p.prompt}${p.kind==='choice'?'<div class="wch">'+p.choices.map(c=>`<span>${c.label}. ${c.text}</span>`).join('')+'</div>':''}</div>
+        <div style="font-size:.92rem">Your answer: <span class="n">${a.trim()?esc(a):'none'}</span> · Correct answer: <span class="n">${p.answerText}</span></div>
+        <details class="steps"><summary>Worked solution</summary><div class="sol">${p.solution}</div></details></div>`}).join('')+`</article></div>`}}
+function finishMock(timedOut){
+  clearInterval(M.timer);
+  const ans=M.probs.map((p,i)=>readAns(p,'mqa'+i,$('#mq'+i)||document));
+  const ok=M.probs.map((p,i)=>ans[i].trim()!==''&&isRight(p,ans[i]));
+  M.res={ans,ok,score:ok.filter(Boolean).length,timedOut,left:M.end-Date.now()};M.phase='done';renderMock();scrollTo(0,0)}
+$('#mockRoot').addEventListener('click',e=>{
+  if(e.target.closest('#mkStart')){M.minutes=+$('#mkMin').value;const r=newRng();M.probs=TYPES.map(t=>makeProblem(t.id,M.level,r));
+    M.end=Date.now()+M.minutes*60000;M.phase='run';renderMock();
+    M.timer=setInterval(()=>{const c=$('#clock');if(!c)return;const left=M.end-Date.now();c.textContent=fmt(left);c.classList.toggle('low',left<60000);if(left<=0)finishMock(true)},500);scrollTo(0,0);return}
+  if(e.target.closest('#mkSubmit')){finishMock(false);return}
+  if(e.target.closest('#mkAgain')){M.phase='start';renderMock();return}
+  const sb=e.target.closest('#mkLevel .segb');if(sb){M.level=+sb.dataset.l;$$('#mkLevel .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===sb)))}});
+
+/* ---- worksheets ---- */
+const W={level:2,key:0};
+function buildSheet(){const seed=Math.max(1,Math.min(999999,Math.floor(+$('#wsSeed').value)||1)),per=+$('#wsPer').value,r=rng(seed*7919);
+  const out=[];TYPES.forEach(t=>{for(let i=0;i<per;i++)out.push(makeProblem(t.id,W.level,r))});return{seed,per,probs:out}}
+function sheetText(S,withKey){
+  let n=0,t=`ACSL Round 1 practice · Set ${S.seed} · ${LV[W.level]}\n\n`;
+  S.probs.forEach(p=>{n++;t+=`${n}. ${p.plain}\n`;p.plainChoices.forEach(c=>{t+=`   ${c}\n`});t+='\n'});
+  if(withKey){t+='ANSWER KEY\n';S.probs.forEach((p,i)=>{t+=`${i+1}. ${p.answerPlain}\n`})}
+  return t.trim()+'\n'}
+let SHEET=null;
+function renderSheet(){
+  const S=SHEET=buildSheet();let n=0,h='';
+  TYPES.forEach((t,ti)=>{h+=`<div class="wsec"><h3>${t.name}</h3>`;
+    S.probs.filter(p=>p.type===t.id).forEach(p=>{n++;
+      h+=`<div class="wq"><span class="wn">${n}.</span><div><div class="prompt">${p.prompt}</div>${p.kind==='choice'?'<div class="wch">'+p.choices.map(c=>`<span>${c.label}. ${c.text}</span>`).join('')+'</div>':''}</div></div>`});
+    h+='</div>'});
+  if(W.key>0){h+=`<div class="wkey"><h3>Answer key</h3>`;
+    S.probs.forEach((p,i)=>{h+=`<div class="ki"><b class="n">${i+1}.</b> <span class="n">${p.answerText}</span>`+(W.key===2?`<details class="steps"><summary>Steps</summary><div class="sol">${p.solution}</div></details>`:'')+`</div>`});h+='</div>'}
+  $('#wsOut').innerHTML=h;$('#sheetText').value=sheetText(S,W.key>0)}
+function flash(btn,msg){const o=btn.dataset.o||btn.textContent;btn.dataset.o=o;btn.textContent=msg;setTimeout(()=>{btn.textContent=o},1800)}
+async function copyText(t,btn){try{await navigator.clipboard.writeText(t);flash(btn,'Copied')}catch(e){const ta=$('#sheetText');ta.value=t;ta.closest('details').open=true;ta.focus();ta.select();flash(btn,'Select and copy below')}}
+$('#wsCopyQ').addEventListener('click',e=>copyText(sheetText(SHEET,false),e.currentTarget));
+$('#wsCopyK').addEventListener('click',e=>{let t=`ANSWER KEY · Set ${SHEET.seed} · ${LV[W.level]}\n`;SHEET.probs.forEach((p,i)=>{t+=`${i+1}. ${p.answerPlain}\n`});copyText(t,e.currentTarget)});
+$('#wsSeed').addEventListener('input',renderSheet);$('#wsPer').addEventListener('change',renderSheet);
+$('#wsNew').addEventListener('click',()=>{$('#wsSeed').value=Math.floor(Math.random()*9000)+1000;renderSheet()});
+$('#wsLevel').addEventListener('click',e=>{const b=e.target.closest('.segb');if(!b)return;W.level=+b.dataset.l;$$('#wsLevel .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderSheet()});
+$('#wsKey').addEventListener('click',e=>{const b=e.target.closest('.segb');if(!b)return;W.key=+b.dataset.k;$$('#wsKey .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderSheet()});
+
+/* ---- boot ---- */
+renderChips();renderProgress();nextQ();renderBits();renderRGB(false);renderEN();renderMock();renderSheet();showTab();
+</script>
+
+</body>
+</html>
