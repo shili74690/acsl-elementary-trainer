@@ -1,9 +1,6 @@
-<!doctype html>
-<html lang="en">
-<head>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>ACSL Round 1 Trainer</title>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
 /* Layout: left-aligned header with a bit-strip motif, underlined tab bar, then cards on a two-column grid that stacks on phones.
@@ -14,6 +11,7 @@
   --good:#17803f; --good-bg:#e3f3ea; --bad:#c23a2e; --bad-bg:#fbe9e7;
   --b2:#0c7f72; --b8:#a35a00; --b10:#4d5b7c; --b16:#7338c9;
   --cr:#d23b3b; --cg:#1d8f49; --cb:#2f62e0;
+  --t1:#b8743a; --t2:#8c99b3; --t3:#d9a21b; --medal-ink:#111b34;
   --f-display:'Space Grotesk','Inter',system-ui,sans-serif;
   --f-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
   --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
@@ -23,16 +21,15 @@
   --accent:#7d9cff; --accent-ink:#0d1325;
   --good:#5fd993; --good-bg:#12301f; --bad:#ff8d82; --bad-bg:#3a1b19;
   --b2:#4fd1c0; --b8:#f0a64a; --b10:#9fb0d6; --b16:#b894ff;
-  --cr:#ff7d7d; --cg:#5fd993; --cb:#7d9cff; color-scheme:dark}}
+  --cr:#ff7d7d; --cg:#5fd993; --cb:#7d9cff; --t1:#d58b52; --t2:#b7c2d9; --t3:#f2c040; --medal-ink:#0d1325; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0d1325; --surface:#151d35; --surface2:#1b2543; --ink:#e8ecf8; --muted:#9aa6c6; --line:#2a3558;
   --accent:#7d9cff; --accent-ink:#0d1325;
   --good:#5fd993; --good-bg:#12301f; --bad:#ff8d82; --bad-bg:#3a1b19;
   --b2:#4fd1c0; --b8:#f0a64a; --b10:#9fb0d6; --b16:#b894ff;
-  --cr:#ff7d7d; --cg:#5fd993; --cb:#7d9cff; color-scheme:dark}
+  --cr:#ff7d7d; --cg:#5fd993; --cb:#7d9cff; --t1:#d58b52; --t2:#b7c2d9; --t3:#f2c040; --medal-ink:#0d1325; color-scheme:dark}
 
 *{box-sizing:border-box}
-[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);
   padding-block:22px 64px;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -135,6 +132,42 @@ select{font-family:var(--f-body)}
 .summary{margin-top:10px;font-size:1.05rem}
 .expand{font-size:.9rem;color:var(--muted);margin-top:6px;overflow-wrap:anywhere}
 
+/* bit switches: each row is one line, groups and bits share the width */
+.grow{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px}
+#rowHex{--n:3} #rowOct{--n:4}
+.grp{min-width:0;padding:6px}
+.gbits{display:grid;grid-template-columns:repeat(var(--k),minmax(0,1fr));gap:3px}
+#rowHex .gbits{--k:4} #rowOct .gbits{--k:3}
+.bit{width:100%;min-width:0;height:2.2rem;font-size:.9rem}
+.gres{font-size:1.2rem}
+.gres small{font-size:.66rem;white-space:nowrap}
+@media (max-width:480px){.grow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* explore: converter + counts */
+.convin{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:12px}
+.convin input[type=text]{width:min(100%,22rem)}
+.binstr{font:500 1.5rem/1.35 var(--f-mono);letter-spacing:.06em;overflow-wrap:anywhere;margin:6px 0 2px}
+.binstr .one{color:var(--accent);font-weight:700}
+.binstr .zero{color:var(--muted)}
+.counts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.cnt{border:1px solid var(--line);border-radius:8px;background:var(--surface2);padding:8px 14px;min-width:5.5rem}
+.cnt b{display:block;font:700 1.5rem var(--f-mono)}
+.cnt span{font-size:.76rem;color:var(--muted)}
+.cnt.one b{color:var(--accent)}
+.pair{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.pair{grid-template-columns:minmax(0,1fr)}}
+.cv .sub{margin-bottom:8px}
+.cv .convin{margin-bottom:6px;gap:6px 8px}
+.cv .convin input[type=text]{width:7.5rem;padding:6px 10px}
+.cv .segb{padding:4px 10px}
+.cv .btn{padding:6px 12px}
+.cv .rowlabel{margin:8px 0 4px}
+.cv .binstr{font-size:1.1rem;margin:2px 0}
+.cv .counts{gap:6px;margin-top:6px}
+.cv .cnt{display:flex;gap:6px;align-items:baseline;padding:3px 10px;min-width:0}
+.cv .cnt b{display:inline;font-size:1.05rem}
+.cv .summary{margin-top:6px;font-size:.88rem;line-height:1.7}
+
 /* explore: rgb */
 .swatch{height:84px;border-radius:8px;border:1px solid var(--line);margin-bottom:12px}
 .ch{display:grid;grid-template-columns:4.2rem minmax(0,1fr) 3rem;gap:4px 10px;align-items:center;margin-bottom:6px}
@@ -185,12 +218,37 @@ details.plain summary{cursor:pointer;font-weight:600;font-size:.9rem}
 textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
 .foot{margin-top:28px;color:var(--muted);font-size:.85rem}
 
+/* badges */
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:12px}
+.bcard{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.bcard.locked .bname{color:var(--muted)}
+.medalw{display:flex;flex-direction:column;align-items:center;gap:7px;flex:none}
+.medal{width:58px;height:64px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);display:grid;place-items:center;background:var(--line);color:var(--muted);font:700 1rem var(--f-mono)}
+.medal.sm{width:28px;height:31px;font-size:.75rem}
+.medal.t1{background:var(--t1);color:var(--medal-ink)}
+.medal.t2{background:var(--t2);color:var(--medal-ink)}
+.medal.t3{background:var(--t3);color:var(--medal-ink)}
+.pips{display:flex;gap:4px}
+.pips i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.pips i.p1{background:var(--t1)} .pips i.p2{background:var(--t2)} .pips i.p3{background:var(--t3)}
+.binfo{min-width:0;flex:1}
+.bname{font:600 1rem var(--f-display)}
+.bstat{font-size:.8rem;color:var(--muted);margin:2px 0 6px}
+.bgoal{font-size:.88rem;margin-bottom:8px}
+.bnum{font:.78rem var(--f-mono);color:var(--muted);margin-top:4px}
+.tierlbl{font:700 .64rem var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border-radius:4px;color:var(--medal-ink);margin-left:6px;vertical-align:1px}
+.tierlbl.t1{background:var(--t1)} .tierlbl.t2{background:var(--t2)} .tierlbl.t3{background:var(--t3)}
+.mini{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;justify-content:space-between;margin-bottom:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface2);font-size:.88rem}
+.mini a{color:var(--accent);font-weight:600}
+.mini .last{flex-basis:100%;color:var(--muted);font-size:.82rem}
+.toast{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;pointer-events:none;z-index:20;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.toast>div{pointer-events:auto;display:flex;gap:12px;align-items:center;max-width:100%;background:var(--ink);color:var(--bg);border-radius:10px;padding:10px 16px;font-size:.92rem}
+@media (prefers-reduced-motion:no-preference){.toast>div{animation:pop .25s ease-out}@keyframes pop{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}}
 @media (max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}}
 @media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
 </style>
 
-</head>
-<body>
 <div class="wrap">
   <header class="top">
     <div>
@@ -209,6 +267,7 @@ textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);bac
     <button class="tab" role="tab" id="t-explore" aria-controls="p-explore">Explore</button>
     <button class="tab" role="tab" id="t-mock" aria-controls="p-mock">Mock contest</button>
     <button class="tab" role="tab" id="t-worksheet" aria-controls="p-worksheet">Worksheets</button>
+    <button class="tab" role="tab" id="t-badges" aria-controls="p-badges">Badges</button>
   </nav>
 
   <!-- PRACTICE -->
@@ -240,8 +299,9 @@ textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);bac
         <h2>Your progress</h2>
         <p class="sub">Saved in this browser only.</p>
         <div class="streak"><div><b id="stStreak">0</b><span>current streak</span></div><div><b id="stBest">0</b><span>best streak</span></div></div>
+        <div class="mini" id="bdMini"></div>
         <div id="progRows"></div>
-        <button class="btn ghost" id="btnReset">Reset progress</button>
+        <button class="btn ghost" id="btnReset">Reset progress and badges</button>
       </aside>
     </div>
   </section>
@@ -249,6 +309,7 @@ textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);bac
   <!-- EXPLORE -->
   <section id="p-explore" role="tabpanel" aria-labelledby="t-explore" hidden>
     <div class="stack">
+      <div class="pair">
       <article class="card">
         <h2>Bit switches</h2>
         <p class="sub">Tap a bit to flip it. Grouping by 4 gives a hex digit; grouping by 3 gives an octal digit. Both groupings start from the right.</p>
@@ -258,11 +319,29 @@ textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);bac
         <div class="grow" id="rowOct"></div>
         <div class="summary" id="bitSummary"></div>
         <div class="expand" id="bitExpand"></div>
+        <div class="counts" id="bitCounts" aria-label="Count of ones and zeros"></div>
         <div class="btnrow">
           <button class="btn ghost" id="bitRandom">Random number</button>
           <button class="btn ghost" id="bitClear">Clear</button>
         </div>
       </article>
+
+      <article class="card cv">
+        <h2>Number to bits</h2>
+        <p class="sub">Type a binary, octal or hex number. Leading zeros are not counted.</p>
+        <div class="convin">
+          <label class="lbl" for="cvIn">Number</label>
+          <input type="text" id="cvIn" maxlength="24" autocomplete="off" spellcheck="false" value="7B5" style="text-transform:uppercase">
+          <div class="seg" id="cvSeg" role="group" aria-label="Input base">
+            <button class="segb" data-b="2" aria-pressed="false">Binary</button>
+            <button class="segb" data-b="8" aria-pressed="false">Octal</button>
+            <button class="segb" data-b="16" aria-pressed="true">Hex</button>
+          </div>
+          <button class="btn ghost" id="cvRandom">Random</button>
+        </div>
+        <div id="cvOut" aria-live="polite"></div>
+      </article>
+      </div>
 
       <div class="grid-auto">
         <article class="card">
@@ -350,8 +429,18 @@ textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);bac
     </article>
   </section>
 
+  <!-- BADGES -->
+  <section id="p-badges" role="tabpanel" aria-labelledby="t-badges" hidden>
+    <div class="stack">
+      <article class="card" id="bdSummary"></article>
+      <div class="bgrid" id="bdGrid"></div>
+    </div>
+  </section>
+
   <p class="foot">Problems are generated in the style of past ACSL Contest 1 questions (2016–2024): conversion, comparison, base arithmetic, bit counting and hex colours.</p>
 </div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ============ problem generators ============ */
@@ -516,23 +605,68 @@ function readAns(p,id,root){if(p.kind==='choice'){const c=root.querySelector(`in
 function lockInputs(root){$$('input',root).forEach(i=>i.disabled=true)}
 
 /* ---- tabs ---- */
-const TABS=['practice','explore','mock','worksheet'];
+const TABS=['practice','explore','mock','worksheet','badges'];
 function showTab(){const h=location.hash.slice(1),t=TABS.includes(h)?h:'practice';
   TABS.forEach(x=>{$('#p-'+x).hidden=x!==t;$('#t-'+x).setAttribute('aria-selected',String(x===t))})}
 TABS.forEach(x=>$('#t-'+x).addEventListener('click',()=>{location.hash=x}));
 addEventListener('hashchange',showTab);
 
 /* ---- practice ---- */
-let ST={streak:0,best:0};
-try{const s=JSON.parse(localStorage.getItem('acsl-r1-stats')||'null');if(s)ST=Object.assign(ST,s)}catch(e){}
+const freshST=()=>({streak:0,best:0,lv2c:0,days:[],mockBest:0,mockDone:0,ex:{},earned:{}});
+let ST=freshST();
+try{const s=JSON.parse(localStorage.getItem('acsl-r1-stats')||'null');if(s)ST=Object.assign(freshST(),s)}catch(e){}
 const saveST=()=>{try{localStorage.setItem('acsl-r1-stats',JSON.stringify(ST))}catch(e){}};
+/* ---- badges ---- */
+const TN=['Bronze','Silver','Gold'];
+const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+function runDays(days){const u=[...new Set(days)].sort();let best=0,run=0,prev=null;
+  u.forEach(d=>{const [y,m,dd]=d.split('-').map(Number),t=Date.UTC(y,m-1,dd)/864e5;run=(prev!==null&&t-prev===1)?run+1:1;prev=t;best=Math.max(best,run)});return best}
+const totalAttempts=s=>TYPES.reduce((n,t)=>n+((s[t.id]||{}).a||0),0);
+const BADGES=[
+  ...[['convert','Converter','↔','conversion'],['compare','Comparator','<>','comparison'],['arith','Calculator','+−','arithmetic'],['bits','Bit Counter','101','bit-counting'],['rgb','Colour Coder','#','hex colour']]
+    .map(([id,name,glyph,w])=>({id:'m-'+id,name,glyph,goals:[5,15,30],text:g=>`Answer ${g} ${w} questions correctly`,value:s=>(s[id]||{}).c||0})),
+  {id:'streak',name:'On a Roll',glyph:'→',goals:[5,10,20],text:g=>`Get ${g} correct answers in a row`,value:s=>s.best},
+  {id:'days',name:'Regular',glyph:'Day',goals:[2,5,10],text:g=>`Practise on ${g} days in a row`,value:s=>runDays(s.days)},
+  {id:'contest',name:'Contest Ready',glyph:'C1',goals:[10,30,60],text:g=>`Answer ${g} Contest-level questions correctly`,value:s=>s.lv2c},
+  {id:'volume',name:'Workhorse',glyph:'Σ',goals:[25,100,250],text:g=>`Attempt ${g} questions`,value:totalAttempts},
+  {id:'mock',name:'Test Taker',glyph:'5Q',goals:[1,2,3],noCount:true,text:g=>['','Finish a mock contest','Score 3 or more in a mock contest','Score 5 out of 5 in a mock contest'][g],value:s=>s.mockBest>=5?3:s.mockBest>=3?2:s.mockDone>=1?1:0},
+  {id:'explore',name:'Explorer',glyph:'∞',goals:[1,2,3],text:g=>`Try ${['','one','two','all three'][g]} of the Explore tools`,value:s=>Object.values(s.ex).filter(Boolean).length}
+];
+const tiersOf=b=>b.goals.filter(g=>b.value(ST)>=g).length;
+const tierTag=id=>{const t=tiersOf(BADGES.find(b=>b.id==='m-'+id));return t?`<span class="tierlbl t${t}">${TN[t-1]}</span>`:''};
+const badgeName=key=>{const [id,i]=key.split(':');return BADGES.find(b=>b.id===id).name+' · '+TN[+i]};
+function syncEarned(silent){const fresh=[];
+  BADGES.forEach(b=>{const t=tiersOf(b);for(let i=0;i<t;i++){const k=b.id+':'+i;if(!ST.earned[k]){ST.earned[k]=dayKey();fresh.push(b.name+' · '+TN[i])}}});
+  if(fresh.length){saveST();if(!silent)toast(fresh)}}
+let toastTimer;
+function toast(names){const t=$('#toast');
+  t.innerHTML=`<div><span class="medal sm t3" aria-hidden="true">★</span><span><b>Badge earned</b><br>${names.map(esc).join('<br>')}</span></div>`;
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.innerHTML=''},5200)}
+function renderMini(){const got=Object.keys(ST.earned).length,total=BADGES.length*3,last=Object.keys(ST.earned).slice(-2).reverse().map(badgeName);
+  $('#bdMini').innerHTML=`<span><b>${got}</b> of ${total} badge tiers</span><a href="#badges">View badges</a>`+(last.length?`<span class="last">Latest: ${last.map(esc).join(', ')}</span>`:'<span class="last">Answer a question to start earning badges.</span>')}
+function renderBadges(){
+  const total=BADGES.length*3,got=Object.keys(ST.earned).length,pct=Math.round(100*got/total);
+  $('#bdSummary').innerHTML=`<div class="lbl">Badge tiers earned</div><div class="score">${got} <span class="n" style="font-size:1.1rem;color:var(--muted)">/ ${total}</span></div>
+    <div class="bar" style="margin:8px 0 10px"><i style="width:${pct}%"></i></div>
+    <p class="sub" style="margin:0">Each badge has Bronze, Silver and Gold tiers. Badges are saved in this browser only.</p>`;
+  $('#bdGrid').innerHTML=BADGES.map(b=>{const v=b.value(ST),t=tiersOf(b),next=b.goals[t];
+    const status=t===3?'All tiers earned':t?`${TN[t-1]} earned`:'Not started';
+    const goal=next?`Next: ${b.text(next)}`:b.text(b.goals[2]);
+    const bar=next?`<div class="bar"><i style="width:${Math.min(100,Math.round(100*v/next))}%"></i></div>`+(b.noCount?'':`<div class="bnum">${Math.min(v,next)} / ${next}</div>`):'';
+    return `<article class="bcard${t?'':' locked'}"><div class="medalw"><div class="medal ${t?'t'+t:''}" aria-hidden="true">${b.glyph}</div>
+      <div class="pips" aria-hidden="true"><i class="${t>0?'p1':''}"></i><i class="${t>1?'p2':''}"></i><i class="${t>2?'p3':''}"></i></div></div>
+      <div class="binfo"><div class="bname">${b.name}</div><div class="bstat">${status}</div><div class="bgoal">${goal}</div>${bar}</div></article>`}).join('')}
+function afterUpdate(){syncEarned(false);renderProgress();renderBadges()}
+function addDay(){const d=dayKey();if(!ST.days.includes(d))ST.days.push(d);if(ST.days.length>400)ST.days=ST.days.slice(-400)}
+function mark(k){if(ST.ex[k])return;ST.ex[k]=true;saveST();afterUpdate()}
+
 const T={type:'mixed',level:1,cur:null,done:false};
 function renderChips(){const all=[{id:'mixed',name:'Mixed'},...TYPES];
   $('#typeChips').innerHTML=all.map(t=>`<button class="chip" data-t="${t.id}" aria-pressed="${T.type===t.id}">${t.name}</button>`).join('')}
 function renderProgress(){
-  $('#stStreak').textContent=ST.streak;$('#stBest').textContent=ST.best;
+  $('#stStreak').textContent=ST.streak;$('#stBest').textContent=ST.best;renderMini();
   $('#progRows').innerHTML=TYPES.map(t=>{const s=ST[t.id]||{a:0,c:0},pct=s.a?Math.round(100*s.c/s.a):0;
-    return `<div class="prow"><div class="pl"><span>${t.name}</span><span class="n">${s.c}/${s.a}</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>`}).join('')}
+    return `<div class="prow"><div class="pl"><span>${t.name}${tierTag(t.id)}</span><span class="n">${s.c}/${s.a}</span></div><div class="bar"><i style="width:${pct}%"></i></div></div>`}).join('')}
 function nextQ(){const type=T.type==='mixed'?TYPES[Math.floor(Math.random()*5)].id:T.type;
   T.cur=makeProblem(type,T.level,newRng());T.done=false;const p=T.cur;
   $('#qmeta').textContent=`${TYPES.find(t=>t.id===type).name} · ${LV[p.level]}`;
@@ -545,17 +679,17 @@ function checkT(){
   const p=T.cur,a=readAns(p,'ans-t',$('#qinput'));
   if(!a.trim()){$('#qfb').innerHTML='<div class="fb note">Enter an answer first.</div>';return}
   const ok=isRight(p,a);T.done=true;
-  const s=ST[p.type]||(ST[p.type]={a:0,c:0});s.a++;if(ok)s.c++;
-  ST.streak=ok?ST.streak+1:0;ST.best=Math.max(ST.best,ST.streak);saveST();
+  const s=ST[p.type]||(ST[p.type]={a:0,c:0});s.a++;if(ok){s.c++;if(p.level===2)ST.lv2c++}
+  ST.streak=ok?ST.streak+1:0;ST.best=Math.max(ST.best,ST.streak);addDay();saveST();
   $('#qfb').innerHTML=(ok?`<div class="fb ok"><strong>Correct.</strong></div>`:`<div class="fb bad"><strong>Not quite.</strong> You answered <span class="n">${esc(a)}</span>. The answer is <span class="n">${p.answerText}</span>.</div>`)
     +`<details class="steps"${ok?'':' open'}><summary>Worked solution</summary><div class="sol">${p.solution}</div></details>`;
   lockInputs($('#qinput'));$('#btnCheck').hidden=true;$('#btnNext').hidden=false;$('#btnHint').hidden=true;$('#btnSkip').hidden=true;
-  renderProgress();$('#btnNext').focus()}
+  afterUpdate();$('#btnNext').focus()}
 $('#btnCheck').addEventListener('click',checkT);
 $('#btnNext').addEventListener('click',nextQ);
 $('#btnSkip').addEventListener('click',nextQ);
 $('#btnHint').addEventListener('click',()=>{const h=$('#qhint');h.hidden=!h.hidden});
-$('#btnReset').addEventListener('click',()=>{ST={streak:0,best:0};saveST();renderProgress()});
+$('#btnReset').addEventListener('click',()=>{ST=freshST();saveST();$('#toast').innerHTML='';renderProgress();renderBadges()});
 $('#p-practice').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.target.matches('input.ans')||e.target.matches('input[type=radio]'))){e.preventDefault();checkT()}});
 $('#typeChips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;T.type=b.dataset.t;renderChips();nextQ()});
 $('#levelSeg').addEventListener('click',e=>{const b=e.target.closest('.segb');if(!b)return;T.level=+b.dataset.l;$$('#levelSeg .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));nextQ()});
@@ -573,9 +707,32 @@ function renderBits(){
   $('#rowOct').innerHTML=h;
   $('#bitSummary').innerHTML=`${N(bv.toString(2),2)} = ${N(bv.toString(8),8)} = ${N(toB(bv,16),16)} = ${N(String(bv),10)}`;
   const on=[];for(let k=11;k>=0;k--)if(bv>>k&1)on.push(2**k);
-  $('#bitExpand').textContent=bv?`Base 10 value: ${on.join(' + ')} = ${bv}`:'Base 10 value: 0'}
+  $('#bitExpand').textContent=bv?`Base 10 value: ${on.join(' + ')} = ${bv}`:'Base 10 value: 0';
+  $('#bitCounts').innerHTML=cntHTML(bv.toString(2))}
+/* ---- explore: counts + typed converter ---- */
+const CNT=bin=>{const b=bin.replace(/^0+(?=.)/,'');let o=0;for(const c of b)if(c==='1')o++;return{b,o,z:b.length-o}};
+const cntHTML=bin=>{const c=CNT(bin);return `<div class="cnt one"><b>${c.o}</b><span>ones</span></div><div class="cnt"><b>${c.z}</b><span>zeros</span></div><div class="cnt"><b>${c.b.length}</b><span>total bits</span></div>`};
+const binStr=b=>b.split('').map(c=>`<span class="${c==='1'?'one':'zero'}">${c}</span>`).join('');
+let cvBase=16;
+function renderConv(){
+  const s=$('#cvIn').value.replace(/\s+/g,'').toUpperCase(),out=$('#cvOut');
+  if(!s){out.innerHTML='<div class="err">Type a number.</div>';return}
+  const bad=s.split('').find(c=>DIG.indexOf(c)<0||DIG.indexOf(c)>=cvBase);
+  if(bad){out.innerHTML=`<div class="err">${esc(bad)} is not a digit in base ${cvBase}. Allowed digits: ${DIG.slice(0,cvBase)}.</div>`;return}
+  const k=cvBase===2?0:cvBase===8?3:4;
+  const parts=k?s.split('').map(c=>DIG.indexOf(c).toString(2).padStart(k,'0')):null;
+  const bits=(parts?parts.join(''):s).replace(/^0+(?=.)/,'');
+  const v=BigInt((cvBase===2?'0b':cvBase===8?'0o':'0x')+s);
+  const map=parts?`<div class="lbl rowlabel">Each ${cvBase===8?'octal':'hex'} digit becomes ${k} bits</div><div class="cells">${s.split('').map((c,i)=>`<span class="cell">${c} → ${parts[i]}</span>`).join('')}</div>`:'';
+  out.innerHTML=`${map}<div class="lbl rowlabel">Binary (leading zeros removed)</div><div class="binstr">${binStr(bits)}</div>
+  <div class="counts">${cntHTML(bits)}</div>
+  <div class="summary">${N(bits,2)} = ${N(v.toString(8),8)} = ${N(v.toString(16).toUpperCase(),16)} = ${N(v.toString(10),10)}</div>`}
+$('#cvIn').addEventListener('input',()=>{renderConv();mark('bits')});
+$('#cvSeg').addEventListener('click',e=>{const b=e.target.closest('.segb');if(!b)return;cvBase=+b.dataset.b;
+  $$('#cvSeg .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderConv()});
+$('#cvRandom').addEventListener('click',()=>{$('#cvIn').value=(1+Math.floor(Math.random()*4095)).toString(cvBase).toUpperCase();renderConv()});
 $('#p-explore').addEventListener('click',e=>{const b=e.target.closest('.bit');if(!b)return;
-  const rowId=b.closest('.grow').id,i=b.dataset.i;bv^=1<<(11-+i);renderBits();
+  const rowId=b.closest('.grow').id,i=b.dataset.i;bv^=1<<(11-+i);renderBits();mark('bits');
   const again=$(`#${rowId} .bit[data-i="${i}"]`);if(again)again.focus()});
 $('#bitRandom').addEventListener('click',()=>{bv=Math.floor(Math.random()*4096);renderBits()});
 $('#bitClear').addEventListener('click',()=>{bv=0;renderBits()});
@@ -587,9 +744,9 @@ function renderRGB(skipHex){
   ['r','g','b'].forEach((k,i)=>{$('#s'+k).value=rgb[i];$('#v'+k).textContent=rgb[i];
     $('#e'+k).textContent=`${hx2(rgb[i])} = ${dg(rgb[i]>>4)} × 16 + ${dg(rgb[i]&15)} = ${rgb[i]}`});
   if(!skipHex){$('#hexIn').value=hex;$('#hexMsg').textContent=''}}
-['r','g','b'].forEach((k,i)=>$('#s'+k).addEventListener('input',e=>{rgb[i]=+e.target.value;renderRGB(false)}));
+['r','g','b'].forEach((k,i)=>$('#s'+k).addEventListener('input',e=>{rgb[i]=+e.target.value;renderRGB(false);mark('rgb')}));
 $('#hexIn').addEventListener('input',e=>{let s=e.target.value.trim().replace(/^#/,'').toUpperCase();
-  if(/^[0-9A-F]{6}$/.test(s)){rgb=[0,2,4].map(i=>parseInt(s.slice(i,i+2),16));renderRGB(true);$('#hexMsg').textContent=''}
+  if(/^[0-9A-F]{6}$/.test(s)){rgb=[0,2,4].map(i=>parseInt(s.slice(i,i+2),16));renderRGB(true);$('#hexMsg').textContent='';mark('rgb')}
   else $('#hexMsg').textContent='Use 6 hex digits, 0 to 9 and A to F.'});
 
 /* ---- explore: expanded notation ---- */
@@ -601,7 +758,7 @@ function renderEN(){
   const d=digitsOf(s),n=d.length;
   out.innerHTML=`<div class="pv">${d.map((x,i)=>{const p=n-1-i;return `<div class="pvc"><span class="pp">${b}${sup(p)} = ${b**p}</span><span class="dd">${s[i]}</span><span class="vv">${x} × ${b**p} = ${x*b**p}</span></div>`}).join('')}</div>
   <div class="summary">${N(s,b)} = ${d.map((x,i)=>x*b**(n-1-i)).join(' + ')} = <b class="n">${parseInt(s,b)}</b></div>`}
-$('#enIn').addEventListener('input',renderEN);$('#enBase').addEventListener('change',renderEN);
+$('#enIn').addEventListener('input',()=>{renderEN();mark('en')});$('#enBase').addEventListener('change',()=>{renderEN();mark('en')});
 $('#nib').innerHTML=Array.from({length:16},(_,i)=>`<div><b>${DIG[i]}</b><span>${i.toString(2).padStart(4,'0')}</span></div>`).join('');
 
 /* ---- mock contest ---- */
@@ -636,7 +793,8 @@ function finishMock(timedOut){
   clearInterval(M.timer);
   const ans=M.probs.map((p,i)=>readAns(p,'mqa'+i,$('#mq'+i)||document));
   const ok=M.probs.map((p,i)=>ans[i].trim()!==''&&isRight(p,ans[i]));
-  M.res={ans,ok,score:ok.filter(Boolean).length,timedOut,left:M.end-Date.now()};M.phase='done';renderMock();scrollTo(0,0)}
+  const score=ok.filter(Boolean).length;ST.mockDone++;ST.mockBest=Math.max(ST.mockBest,score);addDay();saveST();
+  M.res={ans,ok,score,timedOut,left:M.end-Date.now()};M.phase='done';renderMock();afterUpdate();scrollTo(0,0)}
 $('#mockRoot').addEventListener('click',e=>{
   if(e.target.closest('#mkStart')){M.minutes=+$('#mkMin').value;const r=newRng();M.probs=TYPES.map(t=>makeProblem(t.id,M.level,r));
     M.end=Date.now()+M.minutes*60000;M.phase='run';renderMock();
@@ -674,8 +832,7 @@ $('#wsLevel').addEventListener('click',e=>{const b=e.target.closest('.segb');if(
 $('#wsKey').addEventListener('click',e=>{const b=e.target.closest('.segb');if(!b)return;W.key=+b.dataset.k;$$('#wsKey .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderSheet()});
 
 /* ---- boot ---- */
-renderChips();renderProgress();nextQ();renderBits();renderRGB(false);renderEN();renderMock();renderSheet();showTab();
+syncEarned(true);renderChips();renderProgress();renderBadges();nextQ();renderBits();renderConv();renderRGB(false);renderEN();renderMock();renderSheet();showTab();
 </script>
 
-</body>
-</html>
+</body></html>
