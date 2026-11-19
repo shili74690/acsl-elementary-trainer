@@ -143,30 +143,16 @@ select{font-family:var(--f-body)}
 .gres small{font-size:.66rem;white-space:nowrap}
 @media (max-width:480px){.grow{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-/* explore: converter + counts */
-.convin{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-bottom:12px}
-.convin input[type=text]{width:min(100%,22rem)}
-.binstr{font:500 1.5rem/1.35 var(--f-mono);letter-spacing:.06em;overflow-wrap:anywhere;margin:6px 0 2px}
-.binstr .one{color:var(--accent);font-weight:700}
-.binstr .zero{color:var(--muted)}
-.counts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.cnt{border:1px solid var(--line);border-radius:8px;background:var(--surface2);padding:8px 14px;min-width:5.5rem}
-.cnt b{display:block;font:700 1.5rem var(--f-mono)}
+/* explore: counts and editable digits */
+.grow{max-width:34rem}
+.counts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.cnt{display:flex;gap:6px;align-items:baseline;border:1px solid var(--line);border-radius:8px;background:var(--surface2);padding:3px 10px}
+.cnt b{font:700 1.05rem var(--f-mono)}
 .cnt span{font-size:.76rem;color:var(--muted)}
 .cnt.one b{color:var(--accent)}
-.pair{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
-@media (max-width:760px){.pair{grid-template-columns:minmax(0,1fr)}}
-.cv .sub{margin-bottom:8px}
-.cv .convin{margin-bottom:6px;gap:6px 8px}
-.cv .convin input[type=text]{width:7.5rem;padding:6px 10px}
-.cv .segb{padding:4px 10px}
-.cv .btn{padding:6px 12px}
-.cv .rowlabel{margin:8px 0 4px}
-.cv .binstr{font-size:1.1rem;margin:2px 0}
-.cv .counts{gap:6px;margin-top:6px}
-.cv .cnt{display:flex;gap:6px;align-items:baseline;padding:3px 10px;min-width:0}
-.cv .cnt b{display:inline;font-size:1.05rem}
-.cv .summary{margin-top:6px;font-size:.88rem;line-height:1.7}
+.gres input.dig{width:100%;min-width:0;text-align:center;font:700 1.2rem var(--f-mono);padding:2px 0;background:var(--surface);border:1px solid var(--line);border-radius:6px;text-transform:uppercase;caret-color:var(--accent)}
+.grp.h .gres input.dig{color:var(--b16)} .grp.o .gres input.dig{color:var(--b8)}
+.err:empty{display:none}
 
 /* explore: rgb */
 .swatch{height:84px;border-radius:8px;border:1px solid var(--line);margin-bottom:12px}
@@ -309,14 +295,14 @@ textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);bac
   <!-- EXPLORE -->
   <section id="p-explore" role="tabpanel" aria-labelledby="t-explore" hidden>
     <div class="stack">
-      <div class="pair">
       <article class="card">
         <h2>Bit switches</h2>
-        <p class="sub">Tap a bit to flip it. Grouping by 4 gives a hex digit; grouping by 3 gives an octal digit. Both groupings start from the right.</p>
+        <p class="sub">Tap a bit to flip it, or type a hex or octal digit into any group. Grouping by 4 gives a hex digit; grouping by 3 gives an octal digit. Both groupings start from the right.</p>
         <div class="lbl rowlabel">Groups of 4 → hexadecimal</div>
         <div class="grow" id="rowHex"></div>
         <div class="lbl rowlabel">Groups of 3 → octal</div>
         <div class="grow" id="rowOct"></div>
+        <div class="err" id="bitMsg" aria-live="polite"></div>
         <div class="summary" id="bitSummary"></div>
         <div class="expand" id="bitExpand"></div>
         <div class="counts" id="bitCounts" aria-label="Count of ones and zeros"></div>
@@ -325,23 +311,6 @@ textarea{width:100%;min-height:9rem;margin-top:8px;font:.85rem var(--f-mono);bac
           <button class="btn ghost" id="bitClear">Clear</button>
         </div>
       </article>
-
-      <article class="card cv">
-        <h2>Number to bits</h2>
-        <p class="sub">Type a binary, octal or hex number. Leading zeros are not counted.</p>
-        <div class="convin">
-          <label class="lbl" for="cvIn">Number</label>
-          <input type="text" id="cvIn" maxlength="24" autocomplete="off" spellcheck="false" value="7B5" style="text-transform:uppercase">
-          <div class="seg" id="cvSeg" role="group" aria-label="Input base">
-            <button class="segb" data-b="2" aria-pressed="false">Binary</button>
-            <button class="segb" data-b="8" aria-pressed="false">Octal</button>
-            <button class="segb" data-b="16" aria-pressed="true">Hex</button>
-          </div>
-          <button class="btn ghost" id="cvRandom">Random</button>
-        </div>
-        <div id="cvOut" aria-live="polite"></div>
-      </article>
-      </div>
 
       <div class="grid-auto">
         <article class="card">
@@ -700,37 +669,32 @@ function bitBtn(i,on){return `<button class="bit${on?' on':''}" data-i="${i}" ar
 function renderBits(){
   const bits=bv.toString(2).padStart(12,'0').split('');
   let h='';for(let g=0;g<3;g++){const idx=[0,1,2,3].map(k=>g*4+k),v=parseInt(idx.map(i=>bits[i]).join(''),2);
-    h+=`<div class="grp h"><div class="gbits">${idx.map(i=>bitBtn(i,bits[i]==='1')).join('')}</div><div class="gres">${DIG[v]}<small>${idx.map(i=>bits[i]).join('')}₂ = ${v}</small></div></div>`}
+    h+=`<div class="grp h"><div class="gbits">${idx.map(i=>bitBtn(i,bits[i]==='1')).join('')}</div><div class="gres"><input class="dig" type="text" maxlength="1" autocomplete="off" autocapitalize="characters" spellcheck="false" data-b="16" data-g="${g}" value="${DIG[v]}" aria-label="Hex digit ${g+1} of 3"><small>${idx.map(i=>bits[i]).join('')}₂ = ${v}</small></div></div>`}
   $('#rowHex').innerHTML=h;h='';
   for(let g=0;g<4;g++){const idx=[0,1,2].map(k=>g*3+k),v=parseInt(idx.map(i=>bits[i]).join(''),2);
-    h+=`<div class="grp o"><div class="gbits">${idx.map(i=>bitBtn(i,bits[i]==='1')).join('')}</div><div class="gres">${v}<small>${idx.map(i=>bits[i]).join('')}₂ = ${v}</small></div></div>`}
+    h+=`<div class="grp o"><div class="gbits">${idx.map(i=>bitBtn(i,bits[i]==='1')).join('')}</div><div class="gres"><input class="dig" type="text" inputmode="numeric" maxlength="1" autocomplete="off" spellcheck="false" data-b="8" data-g="${g}" value="${v}" aria-label="Octal digit ${g+1} of 4"><small>${idx.map(i=>bits[i]).join('')}₂ = ${v}</small></div></div>`}
   $('#rowOct').innerHTML=h;
   $('#bitSummary').innerHTML=`${N(bv.toString(2),2)} = ${N(bv.toString(8),8)} = ${N(toB(bv,16),16)} = ${N(String(bv),10)}`;
   const on=[];for(let k=11;k>=0;k--)if(bv>>k&1)on.push(2**k);
   $('#bitExpand').textContent=bv?`Base 10 value: ${on.join(' + ')} = ${bv}`:'Base 10 value: 0';
   $('#bitCounts').innerHTML=cntHTML(bv.toString(2))}
-/* ---- explore: counts + typed converter ---- */
+/* ---- explore: counts, and typing a hex or octal digit into a group ---- */
 const CNT=bin=>{const b=bin.replace(/^0+(?=.)/,'');let o=0;for(const c of b)if(c==='1')o++;return{b,o,z:b.length-o}};
 const cntHTML=bin=>{const c=CNT(bin);return `<div class="cnt one"><b>${c.o}</b><span>ones</span></div><div class="cnt"><b>${c.z}</b><span>zeros</span></div><div class="cnt"><b>${c.b.length}</b><span>total bits</span></div>`};
-const binStr=b=>b.split('').map(c=>`<span class="${c==='1'?'one':'zero'}">${c}</span>`).join('');
-let cvBase=16;
-function renderConv(){
-  const s=$('#cvIn').value.replace(/\s+/g,'').toUpperCase(),out=$('#cvOut');
-  if(!s){out.innerHTML='<div class="err">Type a number.</div>';return}
-  const bad=s.split('').find(c=>DIG.indexOf(c)<0||DIG.indexOf(c)>=cvBase);
-  if(bad){out.innerHTML=`<div class="err">${esc(bad)} is not a digit in base ${cvBase}. Allowed digits: ${DIG.slice(0,cvBase)}.</div>`;return}
-  const k=cvBase===2?0:cvBase===8?3:4;
-  const parts=k?s.split('').map(c=>DIG.indexOf(c).toString(2).padStart(k,'0')):null;
-  const bits=(parts?parts.join(''):s).replace(/^0+(?=.)/,'');
-  const v=BigInt((cvBase===2?'0b':cvBase===8?'0o':'0x')+s);
-  const map=parts?`<div class="lbl rowlabel">Each ${cvBase===8?'octal':'hex'} digit becomes ${k} bits</div><div class="cells">${s.split('').map((c,i)=>`<span class="cell">${c} → ${parts[i]}</span>`).join('')}</div>`:'';
-  out.innerHTML=`${map}<div class="lbl rowlabel">Binary (leading zeros removed)</div><div class="binstr">${binStr(bits)}</div>
-  <div class="counts">${cntHTML(bits)}</div>
-  <div class="summary">${N(bits,2)} = ${N(v.toString(8),8)} = ${N(v.toString(16).toUpperCase(),16)} = ${N(v.toString(10),10)}</div>`}
-$('#cvIn').addEventListener('input',()=>{renderConv();mark('bits')});
-$('#cvSeg').addEventListener('click',e=>{const b=e.target.closest('.segb');if(!b)return;cvBase=+b.dataset.b;
-  $$('#cvSeg .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderConv()});
-$('#cvRandom').addEventListener('click',()=>{$('#cvIn').value=(1+Math.floor(Math.random()*4095)).toString(cvBase).toUpperCase();renderConv()});
+const GP={16:{n:3,w:4,row:'#rowHex'},8:{n:4,w:3,row:'#rowOct'}};
+const digAt=(b,g)=>(bv>>((GP[b].n-1-g)*GP[b].w))&(b-1);
+$('#p-explore').addEventListener('input',e=>{const t=e.target;if(!t.matches('.dig'))return;
+  const b=+t.dataset.b,g=+t.dataset.g,{n,w,row}=GP[b],s=t.value.trim().toUpperCase(),msg=$('#bitMsg');
+  if(s==='')return;
+  const d=DIG.indexOf(s[s.length-1]);
+  if(d<0||d>=b){t.value=DIG[digAt(b,g)];t.select();msg.textContent=b===8?'Octal digits are 0 to 7.':'Hex digits are 0 to 9 and A to F.';return}
+  msg.textContent='';
+  const sh=(n-1-g)*w;bv=(bv&~((b-1)<<sh))|(d<<sh);
+  renderBits();mark('bits');
+  const next=$(`${row} .dig[data-g="${Math.min(g+1,n-1)}"]`);if(next){next.focus();next.select()}});
+$('#p-explore').addEventListener('focusin',e=>{if(e.target.matches&&e.target.matches('.dig'))e.target.select()});
+$('#p-explore').addEventListener('focusout',e=>{const t=e.target;if(!t.matches||!t.matches('.dig')||!t.isConnected)return;
+  t.value=DIG[digAt(+t.dataset.b,+t.dataset.g)];$('#bitMsg').textContent=''});
 $('#p-explore').addEventListener('click',e=>{const b=e.target.closest('.bit');if(!b)return;
   const rowId=b.closest('.grow').id,i=b.dataset.i;bv^=1<<(11-+i);renderBits();mark('bits');
   const again=$(`#${rowId} .bit[data-i="${i}"]`);if(again)again.focus()});
@@ -832,7 +796,7 @@ $('#wsLevel').addEventListener('click',e=>{const b=e.target.closest('.segb');if(
 $('#wsKey').addEventListener('click',e=>{const b=e.target.closest('.segb');if(!b)return;W.key=+b.dataset.k;$$('#wsKey .segb').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));renderSheet()});
 
 /* ---- boot ---- */
-syncEarned(true);renderChips();renderProgress();renderBadges();nextQ();renderBits();renderConv();renderRGB(false);renderEN();renderMock();renderSheet();showTab();
+syncEarned(true);renderChips();renderProgress();renderBadges();nextQ();renderBits();renderRGB(false);renderEN();renderMock();renderSheet();showTab();
 </script>
 
 </body></html>
